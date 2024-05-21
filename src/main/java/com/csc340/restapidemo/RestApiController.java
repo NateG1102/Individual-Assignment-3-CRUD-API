@@ -150,4 +150,41 @@ public class RestApiController {
         }
 
     }
+    @GetMapping("/weather")
+    public Object getWeather(@RequestParam String city) {
+        try {
+            String apiKey = "d57cdae40709a1e031ef8ae8d4769b0c";
+            String url = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + apiKey + "&units=metric";
+            RestTemplate restTemplate = new RestTemplate();
+            ObjectMapper mapper = new ObjectMapper();
+
+            // Retrieve weather data from the OpenWeatherMap API.
+            String jsonResponse = restTemplate.getForObject(url, String.class);
+            JsonNode root = mapper.readTree(jsonResponse);
+
+            // Parse relevant weather information from the response.
+            String weatherDescription = root.get("weather").get(0).get("description").asText();
+            double temperature = root.get("main").get("temp").asDouble();
+            int humidity = root.get("main").get("humidity").asInt();
+
+            // Print parsed information to the console.
+            System.out.println("Weather Description: " + weatherDescription);
+            System.out.println("Temperature: " + temperature + "°C");
+            System.out.println("Humidity: " + humidity + "%");
+
+            // Create a response containing relevant weather information.
+            Map<String, Object> response = new HashMap<>();
+            response.put("city", city);
+            response.put("weather", weatherDescription);
+            response.put("temperature", temperature);
+            response.put("humidity", humidity);
+
+            return response;
+        } catch (Exception ex) {
+            Logger.getLogger(RestApiController.class.getName()).log(Level.SEVERE,
+                    null, ex);
+            return "Error retrieving weather information";
+        }
+    }
+
 }
